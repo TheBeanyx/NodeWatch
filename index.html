@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Személyes Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #121212;
+            color: white;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .dashboard {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 350px;
+        }
+        #clock {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        #date {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .weather-box {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+        .nav-button {
+            display: inline-block;
+            text-decoration: none;
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .nav-button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        .hidden-link {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: #333;
+            text-decoration: none;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        <div id="clock">00:00:00</div>
+        <div id="date">Dátum betöltése...</div>
+
+        <div class="weather-box">
+            <div id="ww_6689d0f91572c" v='1.3' loc='id' a='{"t":"horizontal","lang":"hu","sl_lph":1,"id":"ww_6689d0f91572c","font":"Arial","sl_ics":"one_a","sl_sot":"celsius","cl_bkg":"rgba(30,30,30,1)","cl_font":"rgba(255,255,255,1)","cl_cloud":"rgba(255,255,255,1)","cl_persp":"rgba(0,123,255,1)","cl_sun":"rgba(255,193,7,1)","cl_moon":"rgba(255,193,7,1)","cl_thmx":"rgba(255,255,255,1)","cl_thmn":"rgba(255,255,255,1)"}'>
+                <a href="https://weatherwidget.org/hu/" id="ww_6689d0f91572c_u" target="_blank">Időjárás widget</a>
+            </div>
+            <script async src="https://app2.weatherwidget.org/js/?id=ww_6689d0f91572c"></script>
+        </div>
+
+        <a href="viewer.html" class="nav-button">Monitor Belépés</a>
+    </div>
+
+    <a href="streamer.html" class="hidden-link">Admin</a>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            
+            // Óra frissítése
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+
+            // Dátum frissítése
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('date').innerText = now.toLocaleDateString('hu-HU', options);
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body>
+</html>
