@@ -2,45 +2,59 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Watcher - Vizsga Figyelő</title>
+    <title>Néző - Élő Közvetítés</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #000; color: white; margin: 0; overflow: hidden; }
-        .controls { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; }
-        input { padding: 8px; border-radius: 4px; border: none; }
-        button { padding: 8px 15px; background: #e91e63; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        video { width: 100vw; height: 100vh; object-fit: contain; }
+        body { font-family: sans-serif; background: #000; color: white; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        .top-bar { background: rgba(30, 30, 30, 0.9); padding: 15px; display: flex; gap: 10px; align-items: center; z-index: 100; }
+        input { padding: 10px; border-radius: 5px; border: none; flex-grow: 1; max-width: 300px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #video-container { flex-grow: 1; display: flex; justify-content: center; align-items: center; background: #111; position: relative; }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        .loader { position: absolute; color: #555; }
     </style>
 </head>
 <body>
-    <div class="controls">
+    <div class="top-bar">
         <input type="text" id="target-id" placeholder="Diák ID-ja...">
-        <button onclick="connect()">Csatlakozás</button>
-        <div id="info"></div>
+        <button onclick="connect()">Csatlakozás Élőben</button>
+        <span id="status">Várakozás...</span>
     </div>
     
-    <video id="remote-video" autoplay playsinline></video>
+    <div id="video-container">
+        <div class="loader" id="loader-text">Nincs aktív kép</div>
+        <video id="remote-video" autoplay playsinline></video>
+    </div>
 
     <script>
-        const peer = new Peer(); // Véletlen ID a nézőnek
+        const peer = new Peer(); 
 
         function connect() {
             const targetId = document.getElementById('target-id').value;
             if (!targetId) return;
 
-            document.getElementById('info').innerText = "Kapcsolódás...";
-            
-            // Felhívjuk a diákot (stream nélkül, csak kérjük az övét)
+            document.getElementById('status').innerText = "Kapcsolódás...";
+            document.getElementById('loader-text').innerText = "Csatlakozás a streamerhez...";
+
+            // Hívás indítása (null-t küldünk, mert mi csak kapni akarunk képet)
             const call = peer.call(targetId, null);
             
-            call.on('stream', (stream) => {
-                document.getElementById('remote-video').srcObject = stream;
-                document.getElementById('info').innerText = "ÉLŐ KÉP: " + targetId;
-                document.querySelector('.controls').style.opacity = "0.3"; // Elhalványítás
+            call.on('stream', (remoteStream) => {
+                console.log("Stream megérkezett!");
+                document.getElementById('status').innerText = "ÉLŐ KÖZVETÍTÉS";
+                document.getElementById('status').style.color = "#28a745";
+                document.getElementById('loader-text').style.display = "none";
+                
+                const videoElement = document.getElementById('remote-video');
+                videoElement.srcObject = remoteStream;
+                
+                // Néha a böngésző blokkolja az autoplay-t, ezért megpróbáljuk kézzel
+                videoElement.play().catch(e => console.log("Play hiba:", e));
             });
 
             call.on('error', (err) => {
-                alert("Nem található ilyen streamer vagy hiba történt.");
+                alert("Hiba történt. Lehet, hogy rossz az ID?");
+                document.getElementById('status').innerText = "Hiba!";
             });
         }
     </script>
