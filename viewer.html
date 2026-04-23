@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Watcher - Vizsga Figyelő</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #000; color: white; margin: 0; overflow: hidden; }
+        .controls { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; }
+        input { padding: 8px; border-radius: 4px; border: none; }
+        button { padding: 8px 15px; background: #e91e63; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        video { width: 100vw; height: 100vh; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <input type="text" id="target-id" placeholder="Diák ID-ja...">
+        <button onclick="connect()">Csatlakozás</button>
+        <div id="info"></div>
+    </div>
+    
+    <video id="remote-video" autoplay playsinline></video>
+
+    <script>
+        const peer = new Peer(); // Véletlen ID a nézőnek
+
+        function connect() {
+            const targetId = document.getElementById('target-id').value;
+            if (!targetId) return;
+
+            document.getElementById('info').innerText = "Kapcsolódás...";
+            
+            // Felhívjuk a diákot (stream nélkül, csak kérjük az övét)
+            const call = peer.call(targetId, null);
+            
+            call.on('stream', (stream) => {
+                document.getElementById('remote-video').srcObject = stream;
+                document.getElementById('info').innerText = "ÉLŐ KÉP: " + targetId;
+                document.querySelector('.controls').style.opacity = "0.3"; // Elhalványítás
+            });
+
+            call.on('error', (err) => {
+                alert("Nem található ilyen streamer vagy hiba történt.");
+            });
+        }
+    </script>
+</body>
+</html>

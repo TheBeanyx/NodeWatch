@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Streamer Panel - Vizsga</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 50px; }
+        .box { background: #2a2a2a; padding: 30px; border-radius: 15px; display: inline-block; }
+        input { padding: 10px; border-radius: 5px; border: none; width: 200px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; }
+        .btn-reg { background: #28a745; color: white; }
+        .btn-start { background: #007bff; color: white; margin-top: 10px; display: none; }
+        #status { margin-top: 15px; color: #ffc107; }
+        video { width: 400px; margin-top: 20px; border: 2px solid #444; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Streamer Panel</h1>
+        <input type="text" id="custom-id" placeholder="Válassz egy ID-t (pl. JanosVizsga)">
+        <br>
+        <button class="btn-reg" id="reg-btn" onclick="registerID()">ID Regisztrálása</button>
+        <br>
+        <button class="btn-start" id="start-btn" onclick="startStream()">Képernyőmegosztás Indítása</button>
+        <div id="status">Válassz ID-t az induláshoz!</div>
+        <video id="preview" autoplay muted></video>
+    </div>
+
+    <script>
+        let peer = null;
+        let localStream = null;
+
+        function registerID() {
+            const id = document.getElementById('custom-id').value;
+            if (!id) return alert("Adj meg egy nevet!");
+
+            // Peer létrehozása a megadott ID-val
+            peer = new Peer(id);
+
+            peer.on('open', (registeredId) => {
+                document.getElementById('status').innerText = "Sikeres regisztráció! ID: " + registeredId;
+                document.getElementById('reg-btn').style.display = "none";
+                document.getElementById('start-btn').style.display = "inline-block";
+                document.getElementById('custom-id').disabled = true;
+            });
+
+            peer.on('error', (err) => {
+                if (err.type === 'unavailable-id') {
+                    alert("Ez az ID már foglalt! Válassz másikat.");
+                } else {
+                    alert("Hiba: " + err.type);
+                }
+            });
+
+            // Hívás fogadása
+            peer.on('call', (call) => {
+                if (localStream) {
+                    call.answer(localStream);
+                }
+            });
+        }
+
+        async function startStream() {
+            try {
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                document.getElementById('preview').srcObject = localStream;
+                document.getElementById('status').innerText = "KÖZVETÍTÉS ÉLŐBEN!";
+                document.getElementById('status').style.color = "#28a745";
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>
